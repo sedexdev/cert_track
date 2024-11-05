@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="flex flex-col md:flex-row justify-center">
+    <div class="md:mr-16">
+        <img class="h-auto w-48 mx-auto" src="{{ url_for('static', filename='images/uploads/' ~ cert.badge_img) }}" alt="Cert badge image">
+    </div>
+    <div>
+        <h1 class="border-b-2 border-fuchsia-500 text-2xl tracking-wider font-bold my-8 pb-4">{{ cert.name }} - {{ cert.code }}</h1>
+        <p class="my-4">Published: {{ cert.date }}</p>
+        <div class="flex flex-row my-4">
+            {% for tag in cert.tags %}
+            <form action="{{ url_for('certs.search')}}" method="POST">
+                <input class="form-btn mr-4 py-1 px-2" name="search" id="search" type="submit" value="{{ tag.name }}">
+            </form>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<nav class="hidden md:block mt-24">
+    <ol id="cert-nav" class="flex justify-evenly text-center">
+        <li id="nav-statistics" class="size-full border-b-4 hover:text-fuchsia-500 cursor-pointer pb-4" onclick="handleNav(this)">Statistics</li>
+        <li id="nav-courses" class="size-full border-b-4 hover:text-fuchsia-500 cursor-pointer pb-4" onclick="handleNav(this)">Courses</li>
+        <li id="nav-videos" class="size-full border-b-4 hover:text-fuchsia-500 cursor-pointer pb-4" onclick="handleNav(this)">Videos</li>
+        <li id="nav-articles" class="size-full border-b-4 hover:text-fuchsia-500 cursor-pointer pb-4" onclick="handleNav(this)">Articles</li>
+        <li id="nav-documentation" class="size-full border-b-4 hover:text-fuchsia-500 cursor-pointer pb-4" onclick="handleNav(this)">Documentation</li>
+    </ol>
+</nav>
+
+<select class="md:hidden bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full mt-8 p-2.5" name="content" id="content" onchange="handleNav(this)">
+    <option value="statistics">Statistics</option>
+    <option value="courses">Courses</option>
+    <option value="videos">Videos</option>
+    <option value="articles">Articles</option>
+    <option value="documentation">Documentation</option>
+</select>
+
+<p class="hidden w-fit text-lg hover:text-fuchsia-500 cursor-pointer mt-12" onclick="displayAddResourceForm()" id="content-btn">+ Add content</p>
+
+<form class="hidden mt-12" id="resource-form" action="{{ url_for('content.create_resource') }}" method="post">
+    <ul>
+        <li>{{ resource_form.csrf_token }}</li>
+        {% if og_data %}
+            <input type="hidden" name="has_og_data" value="True">
+        {% endif %}
+        <input type="hidden" name="cert-id" value="{{ cert.id }}">
+        <input type="hidden" name="origin" value="{{ cert.route }}">
+        <div class="flex justify-between">
+            <li>{{ resource_form.resource_type.label }}</li>
+            <p class="text-lg hover:text-fuchsia-500 cursor-pointer" onclick="closeForm()">&#x2715;</p>
+        </div>
+        <div class="flex flex-col my-4">
+            {% for btn in resource_form.resource_type %}
+                <div>
+                    <span class="mr-4">{{ btn }}</span>
+                    <span>{{ btn.label }}</span>
+                </div>
+            {% endfor %}
+        </div>
+        {% if og_data %}
+            <p class="text-md text-fuchsia-800 italic mb-4">
+                <span class="text-red-600">*&nbsp;</span>
+                Data pulled using the Open Graph protocol
+            </p>
+            <li>{{ resource_form.url.label(for="resource-url", class="text-lg my-2") }}</li>
+            <li>{{ resource_form.url(id="resource-url", class="input-field autofill:shadow-[inset_0_0_0px_1000px_rgb(255,255,255)]", onblur="this.form.submit();", value=og_data[0].url) }}</li>
+            <li>{{ resource_form.title.label(for="resource-title", class="text-lg my-2") }}</li>
+            <li>{{ resource_form.title(id="resource-title", class="input-field autofill:shadow-[inset_0_0_0px_1000px_rgb(255,255,255)]", value=og_data[0].title) }}</li>
+            <li>{{ resource_form.image.label(for="resource-image", class="text-lg my-2") }}</li>
+            <li>{{ resource_form.image(id="resource-image", class="input-field autofill:shadow-[inset_0_0_0px_1000px_rgb(255,255,255)]", value=og_data[0].image) }}</li>
+            <li>{{ resource_form.description.label(for="resource-description", class="text-lg my-2") }}</li>
+            <li>{{ resource_form.description(id="resource-description", class="input-field autofill:shadow-[inset_0_0_0px_1000px_rgb(255,255,255)]", value=og_data[0].description) }}</li>
+            <li>{{ resource_form.site_name.label(for="resource-site-name", class="text-lg my-2") }}</li>
+            <li>{{ resource_form.site_name(id="resource-site-name", class="input-field autofill:shadow-[inset_0_0_0px_1000px_rgb(255,255,255)]", value=og_data[0].site_name) }}</li>
+        {% else %}
+            <li>{{ resource_form.url.label(for="resource-url", class="text-lg my-2") }}</li>
+            <li>{{ resource_form.url(id="resource-url", class="input-field autofill:shadow-[inset_0_0_0px_1000px_rgb(255,255,255)]", onblur="this.form.submit(); updateResourceFormState('true');") }}</li>
+            <li>{{ resource_form.title.label(for="resource-title", class="text-lg my-2") }}</li>
+            <li>{{ resource_form.title(id="resource-title", class="input-field autofill:shadow-[inset_0_0_0px_1000px_rgb(255,255,255)]") }}</li>
+            <li>{{ resource_form.image.label(for="resource-image", class="text-lg my-2") }}</li>
+            <li>{{ resource_form.image(id="resource-image", class="input-field autofill:shadow-[inset_0_0_0px_1000px_rgb(255,255,255)]") }}</li>
+            <li>{{ resource_form.description.label(for="resource-description", class="text-lg my-2") }}</li>
+            <li>{{ resource_form.description(id="resource-description", class="input-field autofill:shadow-[inset_0_0_0px_1000px_rgb(255,255,255)]") }}</li>
+            <li>{{ resource_form.site_name.label(for="resource-site-name", class="text-lg my-2") }}</li>
+            <li>{{ resource_form.site_name(id="resource-site-name", class="input-field autofill:shadow-[inset_0_0_0px_1000px_rgb(255,255,255)]") }}</li>
+        {% endif %}
+        <li>{{ resource_form.site_logo.label(for="resource-site-image", class="text-lg my-2") }}</li>
+        <li>{{ resource_form.site_logo(id="resource-site-image", class="input-field autofill:shadow-[inset_0_0_0px_1000px_rgb(255,255,255)]") }}</li>
+    </ul>
+    <input class="form-btn my-8 py-2 px-4" type="submit" value="Add" onclick="updateResourceFormState('false')"> 
+</form>
+
+{% block cert_content %} {% endblock %}
+
+{% endblock %}

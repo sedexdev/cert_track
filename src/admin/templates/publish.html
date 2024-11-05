@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% from 'macros/cert_list.html' import list_unpublished_certs with context %}
+
+{% block content %}
+
+<div class="my-4 mb-16">
+    <h1 class="text-3xl font-bold tracking-wider">Manage publishing</h1>
+</div>
+
+<p class="text-md mb-4">
+    <span class="text-red-600">*&nbsp;</span>
+    Certs are not published by default if the corresponding app route does not exist
+</p>
+{% if msg %}
+    <p class="text-lg text-fuchsia-800 italic mb-4">{{ msg }}</p>
+{% endif %}
+{% if not certs %}
+    <p class="text-lg italic text-fuchsia-800 tracking-wider my-8">No unpublished certs found...</p>
+{% else %}
+    {{ list_unpublished_certs(certs) }}
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="my-4 mb-16">
+    <h1 class="text-3xl font-bold tracking-wider">Create new cert</h1>
+</div>
+<form action="{{ url_for('content.create') }}" method="post">
+    <ul>
+        <li>{{ form.csrf_token }}</li>
+        <li>{{ form.name.label(class="text-lg my-2") }}</li>
+        <li>{{ form.name(class="input-field autofill:shadow-[inset_0_0_0px_1000px_rgb(255,255,255)]") }}</li>
+        <li>{{ form.code.label(class="text-lg my-2") }}</li>
+        <li>{{ form.code(class="input-field autofill:shadow-[inset_0_0_0px_1000px_rgb(255,255,255)]") }}</li>
+        <li>{{ form.date.label(class="text-lg my-2") }}</li>
+        <li>{{ form.date(class="input-field autofill:shadow-[inset_0_0_0px_1000px_rgb(255,255,255)]") }}</li>
+        <li>{{ form.tags.label(class="text-lg my-2") }}</li>
+        <li>{{ form.tags(class="input-field autofill:shadow-[inset_0_0_0px_1000px_rgb(255,255,255)]") }}</li>
+        <li>{{ form.head_img.label(class="text-lg my-2") }}</li>
+        <li>{{ form.head_img(class="input-field autofill:shadow-[inset_0_0_0px_1000px_rgb(255,255,255)]") }}</li>
+        <li>{{ form.badge_img.label(class="text-lg my-2") }}</li>
+        <li>{{ form.badge_img(class="input-field autofill:shadow-[inset_0_0_0px_1000px_rgb(255,255,255)]") }}</li>
+        <li>{{ form.exam_date.label(class="text-lg my-2") }}</li>
+        <li>{{ form.exam_date(class="input-field autofill:shadow-[inset_0_0_0px_1000px_rgb(255,255,255)]") }}</li>
+    </ul>
+    <input class="form-btn my-8 py-2 px-4" type="submit" value="Create">
+</form>
+
+{% endblock %}

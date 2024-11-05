@@ -1,0 +1,59 @@
+{% from 'macros/no_content.html' import no_content with context %}
+{% from 'macros/cards.html' import course_card, resource_card with context %}
+
+{% macro stats(cert) %}
+    <p>{{ cert.name }} stats</p>
+    <br/>
+    {% if cert.exam_date %}
+        <div class="flex justify-center size-full bg-lime-500 rounded p-8">
+            <p class="text-white text-lg font-bold">Exam date: {{ cert.exam_date }}</p>
+        </div>    
+    {% endif %}
+    <div class="h-96 bg-yellow-200 shadow-sm my-8 p-16">
+        <p>Plotly Dash graphs will appear here...</p>
+    </div>
+{% endmacro %}
+    
+{% macro courses(courses) %}
+    {% if not courses %}
+        {{ no_content('courses') }}
+    {% else %}
+        {% for course in courses %}
+            {{ course_card(course) }}
+            <br/>
+        {% endfor %}
+    {% endif %}
+{% endmacro %}
+    
+{% macro videos(videos) %}
+    {% if not videos %}
+        {{ no_content('videos') }}
+    {% else %}
+        {% for video in videos %}
+            {{ resource_card(video) }}
+            <br/>
+        {% endfor %}
+    {% endif %}
+{% endmacro %}
+    
+{% macro articles(articles) %}
+    {% if not articles %}
+        {{ no_content('articles') }}
+    {% else %}
+        {% for article in articles %}
+            {{ resource_card(article) }}
+            <br/>
+        {% endfor %}
+    {% endif %}
+{% endmacro %}
+    
+{% macro documentation(documents) %}
+    {% if not documents %}
+        {{ no_content('documentation') }}
+    {% else %}
+        {% for document in documents %}
+            {{ resource_card(document) }}
+            <br/>
+        {% endfor %}
+    {% endif %}
+{% endmacro %}

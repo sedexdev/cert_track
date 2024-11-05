@@ -1,0 +1,102 @@
+{% macro section_card(course, section) %}
+     <div id="section-{{ section.number }}-{{ course.id }}" class="flex flex-col md:flex-row items-center rounded my-4">
+          <div class="flex items-center justify-center size-full h-12 md:h-20 md:w-20 max-md:border-b md:border-r-2 border-slate-300">
+               <p class="text-2xl font-bold italic">{{ section.number }}</p>
+          </div>
+          <div class="flex flex-col size-full md:justify-evenly ml-4 p-4">
+               <p class="text-lg font-bold">{{ section.title }}</p>
+               <form id="sections-{{ course.id }}-form2" action="{{ url_for('content.update_section') }}" method="post">
+                    <ul>
+                         <li>{{ section_form.csrf_token }}</li>
+                         <input type="hidden" name="section-id" value="{{ section.id }}">
+                         <li>{{ section_form.number(class="hidden", value=section.number) }}</li>
+                         <li>{{ section_form.title(class="hidden", value=section.title) }}</li>
+                         {% if section.cards_made %}
+                              <li>{{ section_form.cards_made(id="course-" ~ course.id ~ "-section-" ~ section.id ~ "-cards_made", class="section autofill:shadow-[inset_0_0_0px_1000px_rgb(255,255,255)]", checked="True", onchange="this.form.submit()", onclick="updateSectionColour("~ course.id ~ "," ~ section.id ~ "" ~ ")") }} {{ section_form.cards_made.label(class="text-lg my-2") }}</li>
+                         {% else %}
+                              <li>{{ section_form.cards_made(id="course-" ~ course.id ~ "-section-" ~ section.id ~ "-cards_made", class="section autofill:shadow-[inset_0_0_0px_1000px_rgb(255,255,255)]", onchange="this.form.submit()", onclick="updateSectionColour("~ course.id ~ "," ~ section.id ~ "" ~ ")") }} {{ section_form.cards_made.label(class="text-lg my-2") }}</li>
+                         {% endif %}
+                         {% if section.complete %}
+                              <li>{{ section_form.complete(id="course-" ~ course.id ~ "-section-" ~ section.id ~ "-complete", class="section autofill:shadow-[inset_0_0_0px_1000px_rgb(255,255,255)]", checked="True", onchange="this.form.submit()", onclick="updateSectionColour("~ course.id ~ "," ~ section.id ~ "" ~ ")") }} {{ section_form.complete.label(class="text-lg my-2") }}</li>
+                         {% else %}
+                              <li>{{ section_form.complete(id="course-" ~ course.id ~ "-section-" ~ section.id ~ "-complete", class="section autofill:shadow-[inset_0_0_0px_1000px_rgb(255,255,255)]", onchange="this.form.submit()", onclick="updateSectionColour("~ course.id ~ "," ~ section.id ~ "" ~ ")") }} {{ section_form.complete.label(class="text-lg my-2") }}</li>
+                         {% endif %}
+                    </ul>
+               </form>
+          </div>
+     </div>
+{% endmacro %}
+
+{% macro course_card(course) %}
+     <div class="flex flex-col bg-slate-200 border-2 border-slate-300 my-4">
+          <a class="hover:bg-yellow-300 transition-all duration-400 ease-in-out cursor-pointer" href="{{ course.resource.url }}" target="_blank">
+               <div class="flex flex-col md:flex-row p-4">
+                    <div>
+                         {% if course.resource.has_og_data %}
+                              <img class="h-auto w-full md:w-64" src="{{ course.resource.image }}" alt="{{ course.resource.site_name }} resource page">
+                         {% else %}
+                              <img class="h-auto w-full md:w-64" src="{{ url_for('static', filename='images/uploads/' ~ course.resource.image) }}" alt="{{ course.resource.site_name }} resource page">
+                         {% endif %}
+                    </div>
+                    <div class="flex flex-col justify-evenly my-4 md:my-0 md:ml-8">
+                         <div class="flex items-center">
+                              <img class="h-auto w-24 my-4 md:my-0" src="{{ url_for('static', filename='images/uploads/logos/' ~ course.resource.site_logo) }}" alt="{{ course.resource.site_name }} logo">
+                              <p class="text-lg font-bold ml-4">{{ course.resource.title }}</p>
+                         </div>
+                         <p class="mt-2">{{ course.resource.description }}</p>
+                    </div>
+               </div>
+          </a>
+          <div class="flex justify-center border-t-2 border-slate-300 hover:bg-fuchsia-500 hover:text-white transition-all duration-400 ease-in-out cursor-pointer py-4" onclick="displaySections('{{ course.id }}')">
+               <p class="size-fit mx-2 font-lg font-bold italic">Sections</p>
+               <p class="" id="down-arrow-{{ course.id }}">&#x2B9F;</p>
+               <p class="hidden" id="up-arrow-{{ course.id }}">&#x2B9D;</p>
+          </div>
+          <div class="hidden border-t-2 border-slate-300 p-4" id="sections-{{ course.id }}">
+               <div class="flex justify-between">
+                    <p class="w-fit text-lg hover:text-fuchsia-500 cursor-pointer my-4" onclick="displayAddSectionForm('{{ course.id }}')" id="sections-{{ course.id }}-btn">+ Add Section</p>
+                    <p class="hidden h-fit text-lg hover:text-fuchsia-500 cursor-pointer" id="sections-{{ course.id }}-close-btn" onclick="closeSectionForm('{{ course.id }}')">&#x2715;</p>
+               </div>
+               <div class="my-4">
+                    <form class="hidden" id="sections-{{ course.id }}-form" action="{{ url_for('content.create_section') }}" method="post">
+                         <ul>
+                             <li>{{ section_form.csrf_token }}</li>
+                             <input type="hidden" name="course-id" value="{{ course.id }}">
+                             <input type="hidden" name="cert-id" value="{{ course.resource.cert_id }}">
+                             <li>{{ section_form.number.label(class="text-lg my-2") }}</li>
+                             <li>{{ section_form.number(id="sections-" ~ course.id ~ "-number", class="input-field autofill:shadow-[inset_0_0_0px_1000px_rgb(255,255,255)]") }}</li>
+                             <li>{{ section_form.title.label(class="text-lg my-2") }}</li>
+                             <li>{{ section_form.title(id="sections-" ~ course.id ~ "-title", class="input-field autofill:shadow-[inset_0_0_0px_1000px_rgb(255,255,255)]") }}</li>
+                         </ul>
+                         <input class="form-btn my-8 py-2 px-4" type="submit" value="Add" onclick="clearSectionForm('{{ course.id }}')">
+                    </form>
+               </div>
+               {% for section in course.sections %}
+                    {{ section_card(course, section) }}
+               {% endfor %}
+          </div>
+     </div>
+{% endmacro %}
+
+{% macro resource_card(resource) %}
+     <div class="flex flex-col bg-slate-200 my-4">
+          <a class="hover:bg-yellow-300 transition-all duration-400 ease-in-out cursor-pointer" href="{{ resource.url }}" target="_blank">
+               <div class="flex flex-col md:flex-row p-4">
+                    <div>
+                         {% if resource.has_og_data %}
+                              <img class="h-auto w-full md:w-64" src="{{ resource.image }}" alt="{{ resource.site_name }} resource page">
+                         {% else %}
+                              <img class="h-auto w-full md:w-64" src="{{ url_for('static', filename='images/uploads/' ~ resource.image) }}" alt="{{ resource.site_name }} resource page">
+                         {% endif %}
+                    </div>
+                    <div class="flex flex-col justify-evenly my-4 md:my-0 md:ml-8">
+                         <div class="flex">
+                              <img class="h-auto w-16 my-4 md:my-0" src="{{ url_for('static', filename='images/uploads/logos/' ~ resource.site_logo) }}" alt="{{ resource.site_name }} logo">
+                              <p class="text-lg font-bold my-auto ml-4">{{ resource.title }}</p>
+                         </div>
+                         <p class="mt-2">{{ resource.description }}</p>
+                    </div>
+               </div>
+          </a>
+     </div>
+{% endmacro %}
