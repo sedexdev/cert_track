@@ -2,13 +2,41 @@
 App routes test module
 """
 
+import json
+import os
+
+import requests
+
 from flask.testing import FlaskClient
+
+API_URL = f"http://127.0.0.1:5000/api/v{os.environ["API_VERSION"]}"
 
 
 class TestRoutes:
     """
     Tests correct responses from app routes
     """
+
+    @classmethod
+    def setup_class(cls) -> None:
+        """
+        Setup class before all tests run
+        """
+        cls.cert_data = None
+
+    def setup_method(self) -> None:
+        """
+        Setup class before all tests run
+        """
+        self.cert_data = {
+            "name": "Test",
+            "code": "tst-101",
+            "date": "01/01/2000",
+            "head_img": "test/test.jpg",
+            "badge_img": "test/BADGE_test.png",
+            "exam_date": "",
+            "tags": "test",
+        }
 
     # ===== / =====
 
@@ -135,7 +163,7 @@ class TestRoutes:
         response = client.post("/results?search=test")
         assert response.status_code == 200
 
-    # ===== /create/ =====
+    # ===== /create/cert =====
 
     def test_content_create_returns_search_page(self, client: FlaskClient) -> None:
         """
@@ -144,7 +172,7 @@ class TestRoutes:
         Args:
             client (FlaskClient): client returned by fixture
         """
-        response = client.get("/create/")
+        response = client.get("/create/cert")
         assert b"Create new cert" in response.data
 
     def test_content_create_returns_200(self, client: FlaskClient) -> None:
@@ -154,7 +182,7 @@ class TestRoutes:
         Args:
             client (FlaskClient): client returned by fixture
         """
-        response = client.get("/create/")
+        response = client.get("/create/cert")
         assert response.status_code == 200
 
     # ===== /create/resource =====
@@ -169,24 +197,60 @@ class TestRoutes:
         response = client.get("/create/resource")
         assert response.status_code == 405
 
-    # ===== /admin/manage_publishing =====
+    # ===== /certs/data/<int:cert_id> =====
 
-    def test_admin_manage_publishing_returns_search_page(self, client: FlaskClient) -> None:
+    def test_certs_data_returns_200_with_og_data(self, client: FlaskClient) -> None:
         """
-        Asserts the search page is returned by admin.manage_publishing without POST data
-
-        Args:
-            client (FlaskClient): client returned by fixture
-        """
-        response = client.get("/admin/manage_publishing")
-        assert b"Manage publishing" in response.data
-
-    def test_admin_manage_publishing_returns_200(self, client: FlaskClient) -> None:
-        """
-        Asserts the correct code is returned by admin.manage_publishing
+        Assert 200 is returned when fetching a cert with 
+        Open Graph protocol data
 
         Args:
             client (FlaskClient): client returned by fixture
         """
-        response = client.get("/admin/manage_publishing")
-        assert response.status_code == 200
+        # create cert to fetch endpoint for
+        requests.post(
+            url=f"{API_URL}/cert",
+            data=json.dumps(self.cert_data),
+            headers={"Content-Type": "application/json"},
+            timeout=2
+        )
+        # get the route for this cert
+        og_test = json.dumps([{"testing": True}])
+        response = client.get(f"/certs/data/1?og_data={og_test}")
+        assert \
+            response.status_code == 200 and \
+            b"Test" in response.data
+
+    def test_certs_data_returns_200_without_og_data(self, client: FlaskClient) -> None:
+        """
+        Assert 200 is returned when fetching a cert without 
+        Open Graph protocol data
+
+        Args:
+            client (FlaskClient): client returned by fixture
+        """
+        # create cert to fetch endpoint for
+        requests.post(
+            url=f"{API_URL}/cert",
+            data=json.dumps(self.cert_data),
+            headers={"Content-Type": "application/json"},
+            timeout=2
+        )
+        # get the route for this cert
+        response = client.get("/certs/data/1")
+        assert \
+            response.status_code == 200 and \
+            b"Test" in response.data
+
+    def test_certs_data_returns_404(self, client: FlaskClient) -> None:
+        """
+        Assert 404 is returned if the cert doesn't exist
+
+        Args:
+            client (FlaskClient): client returned by fixture
+        """
+        # try to fetch a cert that doesn't exist
+        response = client.get("/certs/data/1")
+        assert \
+            response.status_code == 404 and \
+            b"not found" in response.data

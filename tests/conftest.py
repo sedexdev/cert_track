@@ -10,7 +10,10 @@ from flask import Flask
 from flask.testing import FlaskClient
 
 from src import create_app
-from src.models import Cert, Course, Resource, Section, db
+from src.db import db
+from src.models.cert import Cert
+from src.models.resource import Resource
+from src.models.section import Section
 
 
 @pytest.fixture()
@@ -44,7 +47,7 @@ def client(app: Flask) -> FlaskClient:
 
 
 @pytest.fixture(autouse=True)
-def clean_db(app: Flask) -> None:
+def clean_db(app: Flask):
     """
     Cleans the test db after each test
 
@@ -52,16 +55,7 @@ def clean_db(app: Flask) -> None:
         app (Flask): Flask app instance
     """
     with app.app_context():
-        cert = Cert.query.first()
-        if cert:
-            cert.tags = []
-            cert.resources = []
-            cert.courses = []
         Cert.query.delete()
-        course = Course.query.first()
-        if course:
-            course.sections = []
-        Course.query.delete()
         Resource.query.delete()
         Section.query.delete()
         db.session.commit()
