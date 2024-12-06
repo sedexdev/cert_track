@@ -11,12 +11,15 @@ services:
     secrets:
       - postgres-pw
       - secret-key
+    volumes:
+      - ./src/static/images/data:/home/app/src/static/images/data
     environment:
       FLASK_ENV: development
       FLASK_APP: /home/app/src
       FLASK_DEBUG: true
       DATABASE_URL: "postgresql://ct_admin:/run/secrets/postgres-pw@db:5432/cert-tracker-db"
       SECRET_KEY: /run/secrets/secret-key
+      API_VERSION: "1"
   db:
     image: postgres:16.4-bookworm
     restart: always 
