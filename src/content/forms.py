@@ -3,17 +3,15 @@ Form module for new cert creation
 """
 
 from flask_wtf import FlaskForm
-from wtforms import BooleanField, RadioField, StringField, validators
+from wtforms import BooleanField, RadioField, StringField, TextAreaField, validators
 
 
-class CreateCertForm(FlaskForm):
+class CertForm(FlaskForm):
     """
     Defines a form for creating a new cert
     """
-
     name = StringField("Name", validators=[validators.DataRequired()])
     code = StringField("Code", validators=[validators.DataRequired()])
-    date = StringField("Date", validators=[validators.DataRequired()])
     tags = StringField("Tags", validators=[validators.DataRequired()])
     head_img = StringField(
         "Image path",
@@ -26,11 +24,10 @@ class CreateCertForm(FlaskForm):
     exam_date = StringField("Exam date")
 
 
-class AddResourceForm(FlaskForm):
+class ResourceForm(FlaskForm):
     """
     Defines a form for adding resources to a cert
     """
-
     resource_type = RadioField("Resource type", choices=[
         ("course", "Course"),
         ("video", "Video"),
@@ -40,28 +37,36 @@ class AddResourceForm(FlaskForm):
     )
     url = StringField("URL", validators=[validators.DataRequired()])
     title = StringField("Title", validators=[validators.DataRequired()])
-    image = StringField("Image", validators=[validators.DataRequired()])
+    image = StringField("Image")
     description = StringField(
         "Description",
         validators=[validators.DataRequired()]
     )
-    site_logo = StringField(
-        "Site logo",
-        validators=[validators.DataRequired()]
-    )
+    site_logo = StringField("Site logo")
     site_name = StringField(
         "Site name",
         validators=[validators.DataRequired()]
     )
 
 
-class AddSectionForm(FlaskForm):
+class SectionForm(FlaskForm):
     """
     Defines a form for adding a section to a course
     """
-
-    number = StringField("Section number", validators=[
-                         validators.DataRequired()])
+    number = StringField(
+        "Section number",
+        validators=[validators.DataRequired()]
+    )
     title = StringField("Title", validators=[validators.DataRequired()])
     cards_made = BooleanField("Flash cards", default=False)
     complete = BooleanField("Complete", default=False)
+
+
+class SectionImportForm(FlaskForm):
+    """
+    Defines a form for importing sections as JSON
+    """
+    text_area = TextAreaField(
+        "Section data JSON",
+        validators=[validators.DataRequired()]
+    )

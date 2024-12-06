@@ -1,16 +1,12 @@
 (function () {
-  const pathWhiteList = [
-    // user defined routes will go here
-  ];
-
   window.onload = () => {
-    if (pathWhiteList.includes(window.location.pathname)) {
+    // update the state if the path is whitelisted
+    if (window.location.pathname.includes("/certs/data")) {
       console.log("Updating state...");
-      if (localStorage.length > 0) {
+      if (window.localStorage.getItem("currentNav")) {
         setCurrentNav(window.localStorage.getItem("currentNav"));
         setDisplayedContent(window.localStorage.getItem("currentNav"));
         setDisplayAddContentBtn(window.localStorage.getItem("currentNav"));
-        setSectionColours();
         setExpandedSections();
         setResourceFormState();
       } else {
@@ -19,6 +15,14 @@
         const content = document.getElementById("statistics");
         content.classList.remove("hidden");
       }
+      setSectionColours();
+    } else {
+      // clear local storage but keep dark mode if it's on
+      Object.keys(localStorage).forEach((key) => {
+        if (key != "darkMode") {
+          window.localStorage.removeItem(key);
+        }
+      });
     }
   };
 })();
@@ -77,15 +81,17 @@ function setDisplayedContent(id) {
 }
 
 /**
- * Updates the add content button displayed
+ * Updates the add content buttons displayed
  *
  * @param {number} id element to update
  */
 function setDisplayAddContentBtn(id) {
-  const btn = document.getElementById("content-btn");
-  if (btn) {
+  const addBtn = document.getElementById("content-btn");
+  const importBtn = document.getElementById("import-btn");
+  if (addBtn && importBtn) {
     if (id != "statistics") {
-      btn.classList.remove("hidden");
+      addBtn.classList.remove("hidden");
+      importBtn.classList.remove("hidden");
     }
   }
 }
@@ -95,34 +101,36 @@ function setDisplayAddContentBtn(id) {
  * course section
  */
 function setSectionColours() {
-  // apply colour to all sections from local storage
-  for (let [key, _] of Object.entries(localStorage)) {
-    if (key.includes("course") && key.includes("sections")) {
-      const courseID = key.split("-")[1];
-      const courseSections = JSON.parse(
-        window.localStorage.getItem(`course-${courseID}-sections`)
+  const sectionsRegex = /^section-(\d+)-(\d+)$/;
+  const dom = document.querySelectorAll("*");
+  const sections = Array.from(dom).filter((el) => sectionsRegex.test(el.id));
+  const toDo = "bg-red-400";
+  const inProgress = "bg-orange-400";
+  const completed = "bg-lime-400";
+  if (sections) {
+    for (let section of sections) {
+      const courseID = section.id.split("-")[1];
+      const sectionNumber = section.id.split("-")[2];
+      const cardsMade = document.getElementById(
+        `course-${courseID}-section-${sectionNumber}-cards_made`
       );
-      for (let section of courseSections) {
-        const el = document.getElementById(`section-${section.id}-${courseID}`);
-        if (el) {
-          el.classList.add(section.colour);
-        }
+      const complete = document.getElementById(
+        `course-${courseID}-section-${sectionNumber}-complete`
+      );
+      // update the colour
+      if (cardsMade.checked && complete.checked) {
+        section.classList.remove(toDo);
+        section.classList.remove(inProgress);
+        section.classList.add(completed);
+      } else if (cardsMade.checked || complete.checked) {
+        section.classList.remove(toDo);
+        section.classList.remove(completed);
+        section.classList.add(inProgress);
+      } else {
+        section.classList.remove(inProgress);
+        section.classList.remove(completed);
+        section.classList.add(toDo);
       }
-    }
-  }
-  // add bg-red-400 to any section without a colour
-  // this will catch newly created sections
-  const sections = document.querySelectorAll('[id^="section-"]');
-  for (let section of sections) {
-    let hasColour = false;
-    for (let c of section.classList) {
-      if (c.includes("bg-")) {
-        hasColour = true;
-        break;
-      }
-    }
-    if (!hasColour) {
-      section.classList.add("bg-red-400");
     }
   }
 }
@@ -139,9 +147,11 @@ function setExpandedSections() {
       const down = document.getElementById(`down-arrow-${id}`);
       const up = document.getElementById(`up-arrow-${id}`);
       const el = document.getElementById(`sections-${id}`);
-      down.classList.add("hidden");
-      up.classList.remove("hidden");
-      el.classList.remove("hidden");
+      if (el) {
+        down.classList.add("hidden");
+        up.classList.remove("hidden");
+        el.classList.remove("hidden");
+      }
     }
   }
 }
@@ -157,8 +167,20 @@ function setResourceFormState() {
     const form = document.getElementById("resource-form");
     if (form) {
       form.classList.remove("hidden");
-      const btn = document.getElementById("content-btn");
-      btn.classList.add("hidden");
+      // hide add content buttons
+      const addBtn = document.getElementById("content-btn");
+      const importBtn = document.getElementById("import-btn");
+      addBtn.classList.add("hidden");
+      importBtn.classList.add("hidden");
+      // hide tab contents
+      const courses = document.getElementById("courses");
+      const videos = document.getElementById("videos");
+      const articles = document.getElementById("articles");
+      const documents = document.getElementById("documentation");
+      const content = [courses, videos, articles, documents];
+      for (let topic of content) {
+        topic.classList.add("hidden");
+      }
     }
   } else {
     const form = document.getElementById("resource-form");

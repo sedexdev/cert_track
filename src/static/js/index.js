@@ -1,33 +1,43 @@
 /**
- * Displays the add content button on all tabs
+ * Toggles the dark class in the document
+ */
+function toggleDarkMode() {
+  // use local storage to persist dark mode
+  if (!window.localStorage.getItem("darkMode")) {
+    window.localStorage.setItem("darkMode", "on");
+  } else {
+    window.localStorage.removeItem("darkMode");
+  }
+  document.documentElement.classList.toggle("dark");
+}
+
+/**
+ * Displays the add content buttons on all tabs
  * except statistics as this just displays stats
  * about the content state
  *
  * @param {string} value tab to show button under
  */
 function displayAddContentButton(value) {
-  const btn = document.getElementById("content-btn");
+  const addBtn = document.getElementById("content-btn");
+  const importBtn = document.getElementById("import-btn");
   if (value != "statistics") {
-    btn.classList.remove("hidden");
+    addBtn.classList.remove("hidden");
+    importBtn.classList.remove("hidden");
   } else {
-    btn.classList.add("hidden");
+    addBtn.classList.add("hidden");
+    importBtn.classList.add("hidden");
   }
 }
 
 /**
- * Hides the add content button
+ * Hides the add content buttons
  */
 function hideAddContentButton() {
-  const btn = document.getElementById("content-btn");
-  btn.classList.add("hidden");
-}
-
-/**
- * Hides the resource form
- */
-function hideResourceForm() {
-  const form = document.getElementById("resource-form");
-  form.classList.add("hidden");
+  const addBtn = document.getElementById("content-btn");
+  const importBtn = document.getElementById("import-btn");
+  addBtn.classList.add("hidden");
+  importBtn.classList.add("hidden");
 }
 
 /**
@@ -58,39 +68,6 @@ function clearFormInputs() {
 }
 
 /**
- * Clears the values from the add section form
- *
- * @param {str} id
- */
-function clearSectionForm(id) {
-  // check local storage for courses with expanded sections
-  const courses = window.localStorage.getItem("coursesWithOpenSections");
-  if (courses) {
-    // parse and update courses with ID if found
-    const courseArray = JSON.parse(courses);
-    if (!courseArray.includes(id)) {
-      courseArray.push(id);
-      window.localStorage.setItem(
-        "coursesWithOpenSections",
-        JSON.stringify(courseArray)
-      );
-    }
-  } else {
-    // create the courses array if not found
-    window.localStorage.setItem(
-      "coursesWithOpenSections",
-      JSON.stringify([id])
-    );
-  }
-  const number = document.getElementById(`sections-${id}-number`);
-  const title = document.getElementById(`sections-${id}-title`);
-  setInterval(() => {
-    number.value = "";
-    title.value = "";
-  }, 500);
-}
-
-/**
  * Clears resource type radio buttons of the
  * checked attribute
  */
@@ -98,107 +75,6 @@ function clearChecked() {
   for (let i = 0; i < 4; i++) {
     const el = document.getElementById(`resource_type-${i}`);
     el.checked = false;
-  }
-}
-
-/**
- * Gets the innerHTML value of the currently
- * selected content tab
- */
-function getSelectedValue() {
-  let value;
-  let links = document.getElementById("cert-nav").children;
-  // find selected element value
-  for (let link of links) {
-    if (link.classList.contains("selected")) {
-      value = link.innerHTML.toLowerCase();
-      break;
-    }
-  }
-  return value;
-}
-
-/**
- * Displays the resource form to add content
- * to the cert dashboard
- */
-function displayAddResourceForm() {
-  let links = document.getElementById("cert-nav").children;
-  // get value of selected content
-  for (let link of links) {
-    if (link.classList.contains("selected")) {
-      type = link.innerHTML.toLowerCase();
-    }
-  }
-  // hide other elements and only display form
-  hideAllContent();
-  hideAddContentButton();
-  hideResourceForm();
-  const form = document.getElementById("resource-form");
-  form.classList.remove("hidden");
-  // clear the input fields
-  clearFormInputs();
-}
-
-/**
- * Displays the section form to add a section
- * to a course
- *
- * @param {str} id
- */
-function displayAddSectionForm(id) {
-  const sections = document.getElementById(`sections-${id}-form`);
-  const addBtn = document.getElementById(`sections-${id}-btn`);
-  const closeBtn = document.getElementById(`sections-${id}-close-btn`);
-  sections.classList.remove("hidden");
-  addBtn.classList.add("hidden");
-  closeBtn.classList.remove("hidden");
-}
-
-/**
- * Updates the selected option in the select
- * drop down list
- *
- * @param {string} value Option to select
- */
-function updateSelect(value) {
-  const select_list = document.getElementById("content");
-  select_list.value = value.toLowerCase();
-}
-
-/**
- * Updates the highlighting for the selected
- * content when selected from the nav bar
- *
- * @param {HTMLElement} el element to update
- */
-function updateHighlightNav(el) {
-  let links = document.getElementById("cert-nav").children;
-  // remove selected class
-  for (let link of links) {
-    if (link.classList.contains("selected")) {
-      link.classList.remove("selected");
-    }
-  }
-  el.classList.add("selected");
-  updateSelect(el.innerHTML);
-}
-
-/**
- * Updates the highlighting for the selected
- * content when selected from the select list
- *
- * @param {str} value
- */
-function updateHighlightSelect(value) {
-  let links = document.getElementById("cert-nav").children;
-  // remove selected class
-  for (let link of links) {
-    if (link.innerHTML.toLowerCase() == value) {
-      link.classList.add("selected");
-    } else {
-      link.classList.remove("selected");
-    }
   }
 }
 
@@ -226,13 +102,51 @@ function displayContent(id) {
 }
 
 /**
+ * Updates the highlighting for the selected
+ * content when selected from the nav bar
+ *
+ * @param {HTMLElement} el element to update
+ */
+function updateHighlightNav(el) {
+  let links = document.getElementById("cert-nav").children;
+  // remove selected class
+  for (let link of links) {
+    if (link.classList.contains("selected")) {
+      link.classList.remove("selected");
+    }
+  }
+  el.classList.add("selected");
+  const select_list = document.getElementById("content");
+  select_list.value = el.innerHTML.toLowerCase();
+}
+
+/**
+ * Updates the highlighting for the selected
+ * content when selected from the select list
+ *
+ * @param {str} value
+ */
+function updateHighlightSelect(value) {
+  let links = document.getElementById("cert-nav").children;
+  // remove selected class
+  for (let link of links) {
+    if (link.innerHTML.toLowerCase() == value) {
+      link.classList.add("selected");
+    } else {
+      link.classList.remove("selected");
+    }
+  }
+}
+
+/**
  * Handles the cert content nav selection
  *
  * @param {HTMLElement} el
  */
 function handleNav(el) {
   // hide any open forms
-  hideResourceForm();
+  hideResourceForm("resource-form");
+  hideResourceForm("resource-import-form");
   // clear the radio buttons
   clearChecked();
   let id;
@@ -252,10 +166,53 @@ function handleNav(el) {
 }
 
 /**
- * Closes the resource form and displays the content
+ *
+ * Displays the resource form to add content
+ * to the cert dashboard
+ *
+ * @param {string} id
  */
-function closeForm() {
-  const el = document.getElementById("resource-form");
+function displayResourceForm(id) {
+  let links = document.getElementById("cert-nav").children;
+  // get value of selected content
+  for (let link of links) {
+    if (link.classList.contains("selected")) {
+      type = link.innerHTML.toLowerCase();
+    }
+  }
+  // hide other elements and only display form
+  hideAllContent();
+  hideAddContentButton();
+  const form = document.getElementById(id);
+  form.classList.remove("hidden");
+  // clear the input fields
+  clearFormInputs();
+}
+
+/**
+ * Gets the innerHTML value of the currently
+ * selected content tab
+ */
+function getSelectedValue() {
+  let value;
+  let links = document.getElementById("cert-nav").children;
+  // find selected element value
+  for (let link of links) {
+    if (link.classList.contains("selected")) {
+      value = link.innerHTML.toLowerCase();
+      break;
+    }
+  }
+  return value;
+}
+
+/**
+ * Closes the resource form and displays the content
+ *
+ * @param {string} id
+ */
+function hideResourceForm(id) {
+  const el = document.getElementById(id);
   el.classList.add("hidden");
   // display the add content button
   const value = getSelectedValue();
@@ -273,136 +230,110 @@ function updateResourceFormState(state) {
 }
 
 /**
- * Closes the section form
- *
- * @param {number} id element ID
+ * Displays the exam date update form
  */
-function closeSectionForm(id) {
-  const sections = document.getElementById(`sections-${id}-form`);
-  const addBtn = document.getElementById(`sections-${id}-btn`);
-  const closeBtn = document.getElementById(`sections-${id}-close-btn`);
-  sections.classList.add("hidden");
-  addBtn.classList.remove("hidden");
-  closeBtn.classList.add("hidden");
-}
-
-/**
- * Displays course section data
- *
- * @param {number} id
- */
-function displaySections(id) {
-  const down = document.getElementById(`down-arrow-${id}`);
-  const up = document.getElementById(`up-arrow-${id}`);
-  const sections = document.getElementById(`sections-${id}`);
-  if (down.classList.contains("hidden")) {
-    down.classList.remove("hidden");
-    up.classList.add("hidden");
-    sections.classList.add("hidden");
-    // update courses with expanded sections
-    const courses = window.localStorage.getItem("coursesWithOpenSections");
-    if (courses) {
-      // parse and update courses with ID if found
-      const courseArray = JSON.parse(courses);
-      const index = courseArray.indexOf(id);
-      if (index > -1) {
-        courseArray.splice(index, 1);
-        window.localStorage.setItem(
-          "coursesWithOpenSections",
-          JSON.stringify(courseArray)
-        );
-      }
-    }
-  } else {
-    down.classList.add("hidden");
-    up.classList.remove("hidden");
-    sections.classList.remove("hidden");
+function displayExamForm() {
+  const form = document.getElementById("exam-date-form");
+  if (form) {
+    const container = document.getElementById("exam-date-container");
+    form.classList.remove("hidden");
+    container.classList.add("hidden");
   }
 }
 
 /**
- * Updates a list of section colours against
- * a single course in local storage
- *
- * @param {number} courseID
- * @param {number} sectionID
- * @param {str} colour
+ * Hides the exam date update form
  */
-function updateSectionsLocalStorage(courseID, sectionID, colour) {
-  // check if sections array for the course already exists
-  const courseArray =
-    window.localStorage.getItem(`course-${courseID}-sections`) || null;
-  if (courseArray) {
-    // // if it does pull it out and add the new section/colour
-    courseSections = JSON.parse(courseArray);
-    let found = false;
-    for (let section of courseSections) {
-      if (section.id == sectionID) {
-        section.colour = colour;
-        found = true;
-        break;
-      }
-    }
-    if (!found) {
-      courseSections.push({ id: sectionID, colour: colour });
-    }
-    // write it back to local storage
-    window.localStorage.setItem(
-      `course-${courseID}-sections`,
-      JSON.stringify(courseSections)
-    );
-  } else {
-    // create the array and write it as a JSON string to local storage
-    window.localStorage.setItem(
-      `course-${courseID}-sections`,
-      JSON.stringify([{ id: sectionID, colour: colour }])
-    );
+function hideExamForm() {
+  const form = document.getElementById("exam-date-form");
+  if (form) {
+    const container = document.getElementById("exam-date-container");
+    form.classList.add("hidden");
+    container.classList.remove("hidden");
   }
 }
 
 /**
- * Sets the colour of a section card based
- * on the checked form elements
+ * Displays the update cert form
  *
- * @param {number} courseID
- * @param {number} sectionID
+ * @param {string} id
  */
-function updateSectionColour(courseID, sectionID) {
-  const sectionCardsMade = document.getElementById(
-    `course-${courseID}-section-${sectionID}-cards_made`
-  );
-  const sectionComplete = document.getElementById(
-    `course-${courseID}-section-${sectionID}-complete`
-  );
-  const toDo = "bg-red-400";
-  const inProgress = "bg-orange-400";
-  const completed = "bg-lime-400";
-  const section = document.getElementById(`section-${sectionID}-${courseID}`);
-  if (sectionCardsMade.checked && sectionComplete.checked) {
-    section.classList.remove(toDo);
-    section.classList.remove(inProgress);
-    section.classList.add(completed);
-    updateSectionsLocalStorage(courseID, sectionID, completed);
-    return;
-  } else if (sectionCardsMade.checked || sectionComplete.checked) {
-    section.classList.remove(toDo);
-    section.classList.remove(completed);
-    section.classList.add(inProgress);
-    updateSectionsLocalStorage(courseID, sectionID, inProgress);
-    return;
-  } else {
-    section.classList.remove(inProgress);
-    section.classList.remove(completed);
-    section.classList.add(toDo);
-    updateSectionsLocalStorage(courseID, sectionID, toDo);
-    return;
+function displayUpdateCert(e, id) {
+  e.preventDefault();
+  const el = document.getElementById(`cert-update-form-${id}`);
+  if (el && e.stopPropagation) {
+    e.stopPropagation();
+    el.classList.remove("hidden");
   }
 }
 
 /**
- * Delete a flashed message
+ * Hides the update cert form
+ *
+ * @param {string} id
  */
-function deleteMsg() {
-  const msgContainer = document.getElementById("msg-container");
-  msgContainer.remove();
+function hideUpdateCert(id) {
+  const el = document.getElementById(`cert-update-form-${id}`);
+  if (el) {
+    el.classList.add("hidden");
+  }
+}
+
+/**
+ * Displays the update resource form
+ *
+ * @param {string} id
+ * @param {string} type
+ */
+function displayUpdateResource(e, id, type) {
+  e.preventDefault();
+  const el = document.getElementById(`resource-update-form-${id}`);
+  if (el && e.stopPropagation) {
+    e.stopPropagation();
+    el.classList.remove("hidden");
+    // set radio button to checked
+    const span = document.getElementById(`update-radio-btn-${type}-${id}`);
+    const btn = span.children[0];
+    btn.setAttribute("checked", "checked");
+  }
+}
+
+/**
+ * Hides the update resource form
+ *
+ * @param {string} id
+ */
+function hideUpdateResource(id) {
+  const el = document.getElementById(`resource-update-form-${id}`);
+  if (el) {
+    el.classList.add("hidden");
+  }
+}
+
+/**
+ * Displays the update section form
+ *
+ * @param {string} id
+ * @param {string} resourceId
+ */
+function displayUpdateSection(e, id, resourceId) {
+  e.preventDefault();
+  const el = document.getElementById(`section-update-form-${id}-${resourceId}`);
+  if (el && e.stopPropagation) {
+    e.stopPropagation();
+    el.classList.remove("hidden");
+  }
+}
+
+/**
+ * Hides the update section form
+ *
+ * @param {string} id
+ * @param {string} resourceId
+ */
+function hideUpdateSection(id, resourceId) {
+  const el = document.getElementById(`section-update-form-${id}-${resourceId}`);
+  if (el) {
+    el.classList.add("hidden");
+  }
 }

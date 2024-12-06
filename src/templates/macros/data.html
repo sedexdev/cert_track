@@ -1,58 +1,85 @@
 {% from 'macros/no_content.html' import no_content with context %}
 {% from 'macros/cards.html' import course_card, resource_card with context %}
+{% from 'macros/window.html' import window, section_window with context %}
 
 {% macro stats(cert) %}
-    <p>{{ cert.name }} stats</p>
-    <br/>
     {% if cert.exam_date %}
-        <div class="flex justify-center size-full bg-lime-500 rounded p-8">
-            <p class="text-white text-lg font-bold">Exam date: {{ cert.exam_date }}</p>
-        </div>    
+        <div id="exam-date-container" class="flex justify-between size-full bg-gradient-to-tr from-lime-500 to-lime-400 shadow-lg rounded p-8">
+            <p class="text-white text-xl font-bold">Exam date: {{ cert.exam_date }}</p>
+            <p class="hidden md:block text-2xl h-fit text-slate-800 hover:text-white cursor-pointer" onclick="displayExamForm()">&#x1F589;</p>
+        </div>
+        <div id="exam-date-form" class="hidden"> 
+            <div class="flex justify-end w-full">
+                <p class="text-2xl h-fit w-fit text-slate-800 hover:text-fuchsia-500 cursor-pointer" onclick="hideExamForm()">&#x2715;</p>
+            </div>
+            <form action="{{ url_for('content.update_cert_exam_date') }}" method="post">
+                <input type="hidden" name="cert_id" value="{{ cert.id }}">
+                <input class="input-field pr-4" type="date" name="exam-date" id="exam-date">
+                <button class="form-btn dark:form-btn-dark my-2 p-2" type="submit">Set exam date</button>
+            </form> 
+        </div>
+    {% else %}
+        <div>
+            <form action="{{ url_for('content.update_cert_exam_date') }}" method="post">
+                <input type="hidden" name="cert_id" value="{{ cert.id }}">
+                <input class="input-field pr-4" type="date" name="exam-date" id="exam-date">
+                <button class="form-btn dark:form-btn-dark my-2 p-2" type="submit">Set exam date</button>
+            </form>  
+        </div>
     {% endif %}
     <div class="h-96 bg-yellow-200 shadow-sm my-8 p-16">
-        <p>Plotly Dash graphs will appear here...</p>
+        <p class="dark:text-slate-800">Plotly Dash graphs will appear here...</p>
     </div>
 {% endmacro %}
     
-{% macro courses(courses) %}
+{% macro courses(courses, cert_id) %}
     {% if not courses %}
         {{ no_content('courses') }}
     {% else %}
         {% for course in courses %}
-            {{ course_card(course) }}
+            {{ course_card(course, section_data) }}
+            {{ window(course.id, "course", cert.id) }}
+            {% for section in section_data %}
+                {% if section.resource_id == course.id %}
+                    {{ section_window(cert.id, course.id, section.id) }}
+                {% endif %}
+            {% endfor %}
             <br/>
         {% endfor %}
     {% endif %}
 {% endmacro %}
     
-{% macro videos(videos) %}
+{% macro videos(videos, cert_id) %}
     {% if not videos %}
         {{ no_content('videos') }}
     {% else %}
         {% for video in videos %}
             {{ resource_card(video) }}
+            {{ window(video.id, "video", cert.id) }}
             <br/>
         {% endfor %}
     {% endif %}
 {% endmacro %}
     
-{% macro articles(articles) %}
+{% macro articles(articles, cert_id) %}
     {% if not articles %}
         {{ no_content('articles') }}
     {% else %}
         {% for article in articles %}
             {{ resource_card(article) }}
+            {{ window(article.id, "article", cert.id) }}
             <br/>
         {% endfor %}
     {% endif %}
 {% endmacro %}
     
-{% macro documentation(documents) %}
+{% macro documentation(documents, cert_id) %}
     {% if not documents %}
         {{ no_content('documentation') }}
     {% else %}
         {% for document in documents %}
             {{ resource_card(document) }}
+            {{ window(document.id, "documentation", cert.id) }}
             <br/>
         {% endfor %}
     {% endif %}

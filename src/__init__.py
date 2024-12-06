@@ -4,20 +4,15 @@ Flask main module
 
 from flask import Flask, Response
 
-import src.models
-
-# user defined routes
-try:
-    from src.data.views import data_bp
-except ModuleNotFoundError:
-    print("[*] Skipping for CI testing")
-
 from src.config import Config
-from src.admin.views import admin_bp
+from src.api import api_bp
 from src.core.views import core_bp
+from src.data.views import data_bp
 from src.errors.handlers import error_bp
 from src.certs.views import cert_bp
 from src.content.views import content_bp
+
+from src.db import db
 
 
 def create_app() -> Flask:
@@ -33,23 +28,18 @@ def create_app() -> Flask:
     application.config.from_object(app_config)
     application.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    # user data blueprint
-    try:
-        application.register_blueprint(data_bp)
-    except NameError:
-        print("[*] Skipping for CI testing")
-
     # register blueprints
-    application.register_blueprint(admin_bp)
+    application.register_blueprint(api_bp)
     application.register_blueprint(core_bp)
+    application.register_blueprint(data_bp)
     application.register_blueprint(error_bp)
     application.register_blueprint(cert_bp)
     application.register_blueprint(content_bp)
 
     # create DB tables
     with application.app_context():
-        src.models.db.init_app(application)
-        src.models.db.create_all()
+        db.init_app(application)
+        db.create_all()
 
     # additional security headers in responses
     @application.after_request
